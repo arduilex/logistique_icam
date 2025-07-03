@@ -1,0 +1,65 @@
+{% extends 'inventory/layouts/base.html' %}
+
+{% block title %}Supprimer {{ product.name }} - Gestion de Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-trash text-danger"></i> Supprimer le produit</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmation de suppression
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Attention !</strong> Cette action est irréversible.
+                </div>
+                
+                <p>Êtes-vous sûr de vouloir supprimer le produit suivant ?</p>
+                
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ product.name }}</h6>
+                        <p class="card-text">
+                            <strong>Référence :</strong> {{ product.reference }}<br>
+                            <strong>Quantité en stock :</strong> {{ product.quantity }}<br>
+                            <strong>Prix unitaire :</strong> {{ product.price|floatformat:2 }} €<br>
+                            <strong>Valeur totale :</strong> {{ product.total_value|floatformat:2 }} €
+                        </p>
+                    </div>
+                </div>
+                
+                {% if product.quantity > 0 %}
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    Ce produit a encore {{ product.quantity }} unité(s) en stock.
+                </div>
+                {% endif %}
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Oui, supprimer définitivement
+                        </button>
+                        <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Non, annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

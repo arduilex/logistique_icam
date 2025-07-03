@@ -1,0 +1,106 @@
+{% extends 'inventory/layouts/base.html' %}
+
+{% block title %}{{ title }} - Gestion de Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-edit"></i> {{ title }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'order_detail' order.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au détail
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Informations de la commande</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Numéro :</strong></td>
+                        <td><code>{{ order.order_number }}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type :</strong></td>
+                        <td>
+                            <span class="badge bg-{% if order.order_type == 'IN' %}success{% else %}primary{% endif %}">
+                                {{ order.get_order_type_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Statut actuel :</strong></td>
+                        <td>
+                            <span class="badge bg-{% if order.status == 'PENDING' %}warning{% elif order.status == 'CONFIRMED' %}info{% elif order.status == 'DELIVERED' %}success{% else %}danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ order.get_order_type_display|slice:":8" }}{% if order.order_type == 'IN' %}sseur{% else %} :%{% endif %}</strong></td>
+                        <td>{{ order.supplier_customer }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date :</strong></td>
+                        <td>{{ order.order_date|date:"d/m/Y à H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-edit"></i> Modifier le statut</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                            <strong>Nouveau statut</strong>
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.help_text %}
+                            <div class="form-text">{{ form.status.help_text }}</div>
+                        {% endif %}
+                        {% if form.status.errors %}
+                            <div class="text-danger">
+                                {% for error in form.status.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Statuts disponibles :</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><span class="badge bg-warning">En attente</span> - Commande créée mais pas encore confirmée</li>
+                            <li><span class="badge bg-info">Confirmée</span> - Commande validée en cours de traitement</li>
+                            <li><span class="badge bg-success">Livrée</span> - Commande terminée et livrée</li>
+                            <li><span class="badge bg-danger">Annulée</span> - Commande annulée</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'order_detail' order.pk %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Mettre à jour le statut
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

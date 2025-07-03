@@ -1,0 +1,152 @@
+{% extends 'inventory/layouts/base.html' %}
+
+{% block title %}Commande {{ order.order_number }} - Gestion de Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-shopping-cart"></i> Commande {{ order.order_number }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'order_update_status' order.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifier le statut
+            </a>
+        </div>
+        <a href="{% url 'order_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Informations de la commande -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Informations de la commande</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>N° Commande :</strong></td>
+                        <td><code>{{ order.order_number }}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type :</strong></td>
+                        <td>
+                            <span class="badge bg-{% if order.order_type == 'IN' %}success{% else %}danger{% endif %}">
+                                {{ order.get_order_type_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Statut :</strong></td>
+                        <td>
+                            <span class="badge bg-{% if order.status == 'PENDING' %}warning{% elif order.status == 'CONFIRMED' %}info{% elif order.status == 'DELIVERED' %}success{% elif order.status == 'CANCELLED' %}danger{% else %}secondary{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date :</strong></td>
+                        <td>{{ order.order_date|date:"d/m/Y à H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{% if order.order_type == 'IN' %}Fournisseur{% else %}Client{% endif %} :</strong></td>
+                        <td>{{ order.supplier_customer|default:"Non spécifié" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notes :</strong></td>
+                        <td>{{ order.notes|default:"Aucune note" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Créée le :</strong></td>
+                        <td>{{ order.created_at|date:"d/m/Y à H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé financier -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-calculator"></i> Résumé financier</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <h3 class="text-primary">{{ order.total_amount|floatformat:2 }} €</h3>
+                    <p class="text-muted mb-3">Montant total</p>
+                </div>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5>{{ order_items|length }}</h5>
+                        <p class="text-muted mb-0">Article(s)</p>
+                    </div>
+                    <div class="col-6">
+                        <h5>{% if order.order_type == 'IN' %}Achat{% else %}Vente{% endif %}</h5>
+                        <p class="text-muted mb-0">Type d'opération</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Articles de la commande -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-list"></i> Articles de la commande</h5>
+            </div>
+            <div class="card-body">
+                {% if order_items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Référence</th>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'product_detail' item.product.pk %}" class="text-decoration-none">
+                                            {{ item.product.name }}
+                                        </a>
+                                    </td>
+                                    <td><code>{{ item.product.reference }}</code></td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.unit_price|floatformat:2 }} €</td>
+                                    <td><strong>{{ item.total_price|floatformat:2 }} €</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active">
+                                    <td colspan="4"><strong>Total de la commande</strong></td>
+                                    <td><strong>{{ order.total_amount|floatformat:2 }} €</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun article dans cette commande.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

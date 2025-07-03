@@ -1,0 +1,126 @@
+{% extends 'inventory/layouts/base.html' %}
+
+{% block title %}Liste des commandes - Gestion de Stock{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-shopping-cart"></i> Commandes</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'order_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvelle commande
+        </a>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="type" class="form-label">Type de commande</label>
+                        <select name="type" class="form-control" id="type">
+                            <option value="">Tous les types</option>
+                            {% for value, label in order_types %}
+                                <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Statut</label>
+                        <select name="status" class="form-control" id="status">
+                            <option value="">Tous les statuts</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                        <a href="{% url 'order_list' %}" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-times"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>N° Commande</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Fournisseur/Client</th>
+                            <th>Montant total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'order_detail' order.pk %}" class="text-decoration-none">
+                                    {{ order.order_number }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if order.order_type == 'IN' %}success{% else %}danger{% endif %}">
+                                    {{ order.get_order_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if order.status == 'PENDING' %}warning{% elif order.status == 'CONFIRMED' %}info{% elif order.status == 'DELIVERED' %}success{% elif order.status == 'CANCELLED' %}danger{% else %}secondary{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.order_date|date:"d/m/Y" }}</td>
+                            <td>{{ order.supplier_customer|default:"-" }}</td>
+                            <td>{{ order.total_amount|floatformat:2 }} €</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'order_detail' order.pk %}" class="btn btn-outline-info" title="Voir le détail">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'order_update_status' order.pk %}" class="btn btn-outline-warning" title="Modifier le statut">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <p class="text-muted">
+                    {% if selected_type or selected_status %}
+                        Aucune commande trouvée avec ces filtres.
+                    {% else %}
+                        Aucune commande enregistrée.
+                    {% endif %}
+                </p>
+                <a href="{% url 'order_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Créer la première commande
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
